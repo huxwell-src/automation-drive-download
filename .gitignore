@@ -159,3 +159,4 @@ planillas_organizadas_test/
 frontend/
 *.tmp
 planilas.xlsx
+.vercel

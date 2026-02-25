@@ -25,7 +25,9 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Automate API",
     description="API para automatizar la descarga y organización de planillas desde Google Drive",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json"
 )
 
 # Configurar CORS
