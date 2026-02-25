@@ -9,10 +9,14 @@ from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException, F
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from dotenv import load_dotenv
 
 from src.models.config import ConfigError, DownloadConfig
 from src.core.processor import PlanillaProcessor
 from src.utils.log_utils import setup_logging
+
+# Cargar variables de entorno
+load_dotenv()
 
 # Configuración inicial
 setup_logging(level_name="INFO")
@@ -25,16 +29,22 @@ app = FastAPI(
 )
 
 # Configurar CORS
+origins = os.getenv("CORS_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Directorios de trabajo usando la carpeta temporal del sistema (obligatorio para Vercel/Cloud)
-BASE_TEMP = Path(tempfile.gettempdir()) / "automate_app"
+# Directorios de trabajo usando la carpeta temporal del sistema
+base_temp_path = os.getenv("BASE_TEMP_DIR")
+if base_temp_path:
+    BASE_TEMP = Path(base_temp_path)
+else:
+    BASE_TEMP = Path(tempfile.gettempdir()) / "automate_app"
+
 UPLOAD_DIR = BASE_TEMP / "uploads"
 OUTPUT_DIR = BASE_TEMP / "planillas_organizadas"
 ZIP_DIR = BASE_TEMP / "exports"
