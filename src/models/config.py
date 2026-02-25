@@ -26,6 +26,7 @@ class DownloadConfig:
 
     excel_path: Path
     output_dir: Path
+    mes: str = "diciembre"
     osde_subdir: str = "OSDE"
     non_osde_subdir: str = "NO es osde"
     nombre_col: str = "NOMBRE Y APELLIDO"

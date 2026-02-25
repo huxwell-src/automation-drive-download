@@ -150,7 +150,7 @@ class GoogleDriveDownloader:
                 exc,
                 extra={"emoji": "❌", "category": "API", "color": "RED"},
             )
-            raise DownloadError(f"No se pudo iniciar la descarga para {file_id}") from exc
+            raise DownloadError(f"No se pudo iniciar la descarga") from exc
 
         token = obtener_token_confirmacion(response)
 
@@ -221,24 +221,27 @@ class GoogleDriveDownloader:
         destino_final = destino_base.with_suffix(".pdf")
 
         try:
+            # Eliminar archivo si ya existe para evitar [WinError 183] en Windows
+            if destino_final.exists():
+                destino_final.unlink()
+
             # Si ya es PDF, solo renombramos
             if extension_orig == ".pdf":
-                temp_path.rename(destino_final)
+                temp_path.replace(destino_final)  # replace es más robusto para sobrescribir
             # Si es imagen (JPG/PNG), convertimos a PDF
-            elif extension_orig in [".jpg", ".png"]:
+            elif extension_orig in [".jpg", ".png", ".jpeg"]:
                 with Image.open(temp_path) as img:
                     # Convertimos a RGB para asegurar compatibilidad con PDF
                     img_rgb = img.convert("RGB")
                     img_rgb.save(destino_final, "PDF")
                 temp_path.unlink()  # Eliminar temporal
-            # Si es XLSX u otro, por ahora solo lo renombramos con .pdf (aunque sea incorrecto binariamente)
-            # o podríamos dejar la extensión original. Pero el usuario pidió PDF.
+            # Si es XLSX u otro, por ahora lo renombramos con .pdf (aunque sea incorrecto binariamente)
             else:
                 logger.warning(
                     f"No se puede convertir {extension_orig} a PDF directamente. Guardando como {destino_final}",
                     extra={"emoji": "⚠️", "category": "API", "color": "YELLOW"},
                 )
-                temp_path.rename(destino_final)
+                temp_path.replace(destino_final)
 
         except Exception as exc:
             logger.error(

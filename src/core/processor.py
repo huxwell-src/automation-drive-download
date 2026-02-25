@@ -115,114 +115,92 @@ class PlanillaProcessor:
     completo de negocio de forma controlada y testeable.
     """
 
-    def __init__(self, config: DownloadConfig, downloader: Optional[GoogleDriveDownloader] = None) -> None:
+    def __init__(self, config: DownloadConfig, downloader: Optional[GoogleDriveDownloader] = None, progress_callback: Optional[callable] = None) -> None:
         """
         Inicializa el procesador de planillas.
 
         Recibe:
         - config: parámetros de entrada/salida y nombres de columnas.
         - downloader: instancia encargada de hablar con Google Drive.
+        - progress_callback: función opcional para reportar el progreso (útil para APIs).
+          Firma: callback(current, total, item_name, status, error_msg, category_detected)
         """
         self._config = config
         self._downloader = downloader or GoogleDriveDownloader()
+        self._progress_callback = progress_callback
 
-    def procesar(self) -> None:
+    def procesar(self) -> dict:
         """
         Ejecuta el flujo completo de procesamiento de planillas.
 
-        Pasos:
-        1. Prepara las carpetas de salida.
-        2. Carga el Excel de entrada.
-        3. Recorre cada fila:
-           - Extrae nombre, categoría y enlace.
-           - Obtiene el ID de Google Drive.
-           - Descarga el archivo en la carpeta correspondiente.
-        4. Muestra un resumen de éxitos y fallos.
+        Retorna un diccionario con el resumen de la operación.
         """
         with timed_operation(
             logger,
             "Procesamiento completo de planillas",
             category="APP",
         ):
-            # Crear (si es necesario) las carpetas donde se guardarán los archivos.
             osde_path, no_osde_path = preparar_carpetas(self._config)
-            # Leer y validar el archivo Excel de entrada.
             df = cargar_excel(self._config)
 
-            # Contadores para informar al usuario al final del proceso.
             total = len(df)
             exitos = 0
             fallos = 0
+            detalles = []
 
-            # Barra de progreso visual para el procesamiento.
-            bar = ProgressBar(total=total, prefix="Procesando planillas")
+            # Solo mostramos barra si no hay callback (CLI)
+            bar = None
+            if not self._progress_callback:
+                bar = ProgressBar(total=total, prefix="Procesando planillas")
 
-            # Iterar fila por fila sobre las planillas definidas en el Excel.
-            for _, row in df.iterrows():
+            for i, row in df.iterrows():
                 nombre = row[self._config.nombre_col]
-                categoria = row[self._config.categoria_col]
+                categoria_valor = row[self._config.categoria_col]
                 link = row[self._config.link_col]
 
-                # Intentar extraer el ID del enlace de Google Drive.
+                status = "success"
+                error_msg = None
+                
+                # Determinar categoría para reporte
+                carpeta_destino = seleccionar_carpeta_destino(categoria_valor, osde_path, no_osde_path)
+                category_label = "OSDE" if carpeta_destino == osde_path else "NO OSDE"
+
                 file_id = extraer_id_drive(link)
                 if not file_id:
-                    mensaje = f"No se pudo leer el link de la planilla para: {nombre}"
-                    logger.warning(
-                        mensaje,
-                        extra={"emoji": "⚠️", "category": "API", "color": "YELLOW"},
-                    )
-                    print(mensaje)
+                    error_msg = f"No se pudo leer el link de la planilla para: {nombre}"
+                    logger.warning(error_msg, extra={"emoji": "⚠️", "category": "API", "color": "YELLOW"})
+                    status = "error"
                     fallos += 1
+                else:
+                    destino_base = carpeta_destino / f"planilla de asistencia {self._config.mes} {nombre}"
+
+                    try:
+                        archivo_final = self._downloader.descargar(file_id, destino_base)
+                        logger.info("Operación de guardado exitosa", extra={"emoji": "✅", "category": "APP", "details": f"archivo={archivo_final}", "color": "GREEN"})
+                        exitos += 1
+                    except DownloadError as exc:
+                        error_msg = str(exc)
+                        logger.error(f"Error al descargar la planilla para {nombre}: {exc}", extra={"emoji": "❌", "category": "API", "color": "RED"})
+                        status = "error"
+                        fallos += 1
+
+                # Reportar progreso si hay callback
+                if self._progress_callback:
+                    self._progress_callback(i + 1, total, nombre, status, error_msg, category_label)
+                
+                if bar:
                     bar.update()
-                    continue
 
-                # Determinar la carpeta de destino según la categoría.
-                carpeta_destino = seleccionar_carpeta_destino(
-                    categoria,
-                    osde_path,
-                    no_osde_path,
-                )
-                # Construir el nombre base del archivo de salida (sin extensión).
-                destino_base = carpeta_destino / f"planilla de asistencia diciembre {nombre}"
+            if bar:
+                bar.finish()
 
-                try:
-                    archivo_final = self._downloader.descargar(file_id, destino_base)
-                except DownloadError as exc:
-                    mensaje = f"Error al descargar la planilla para {nombre}: {exc}"
-                    logger.error(
-                        mensaje,
-                        extra={"emoji": "❌", "category": "API", "color": "RED"},
-                    )
-                    print(mensaje)
-                    fallos += 1
-                    bar.update()
-                    continue
-
-                print(f"✅ Guardado: {archivo_final}")
-                logger.info(
-                    "Operación de guardado exitosa",
-                    extra={
-                        "emoji": "✅",
-                        "category": "APP",
-                        "details": f"archivo={archivo_final}",
-                        "color": "GREEN",
-                    },
-                )
-                exitos += 1
-                bar.update()
-
-            bar.finish()
-
-            resumen = (
-                f"📊 Proceso terminado. Éxitos: {exitos}, Fallos: {fallos}, Total: {total}"
-            )
-            logger.info(
-                resumen,
-                extra={
-                    "emoji": "📊",
-                    "category": "APP",
-                    "color": "BLUE",
-                },
-            )
-            print(resumen)
+            resumen_str = f"📊 Proceso terminado. Éxitos: {exitos}, Fallos: {fallos}, Total: {total}"
+            logger.info(resumen_str, extra={"emoji": "📊", "category": "APP", "color": "BLUE"})
+            
+            return {
+                "total": total,
+                "exitos": exitos,
+                "fallos": fallos,
+                "resumen": resumen_str
+            }
 

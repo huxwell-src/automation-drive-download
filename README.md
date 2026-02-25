@@ -51,6 +51,26 @@ Para eliminar archivos de log antiguos (mayores a 7 días):
 python main.py --clean-logs
 ```
 
+## 🌐 API con FastAPI
+
+Ahora puedes usar Automate como un servicio web.
+
+### Instalación de dependencias para la API:
+```bash
+pip install -r requirements.txt
+```
+
+### Ejecutar el servidor:
+```bash
+uvicorn app:app --reload
+```
+La API estará disponible en `http://localhost:8000`. Puedes acceder a la documentación interactiva en `http://localhost:8000/docs`.
+
+### Endpoints principales:
+- `POST /process/`: Sube un Excel e inicia la descarga en segundo plano.
+- `GET /status/{task_id}`: Consulta el progreso de una tarea específica.
+- `GET /tasks/`: Lista todas las tareas y su estado.
+
 ## 📂 Estructura del Proyecto
 
 El proyecto está organizado en carpetas para una mejor mantenibilidad y separación de responsabilidades:
