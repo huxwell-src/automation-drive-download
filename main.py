@@ -47,6 +47,35 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def buscar_archivo_excel() -> Path:
+    """
+    Busca automáticamente el primer archivo .xlsx en la raíz del proyecto.
+    
+    Excluye archivos temporales que empiezan con ~$ (propios de Excel abierto).
+    """
+    archivos_excel = [
+        f for f in Path(".").glob("*.xlsx") 
+        if not f.name.startswith("~$")
+    ]
+    
+    if not archivos_excel:
+        raise ConfigError("No se encontró ningún archivo Excel (.xlsx) en la raíz del proyecto.")
+    
+    # Si hay varios, tomamos el más reciente
+    archivo_seleccionado = sorted(archivos_excel, key=lambda x: x.stat().st_mtime, reverse=True)[0]
+    
+    logger.info(
+        f"🔍 Archivo Excel detectado automáticamente",
+        extra={
+            "emoji": "🔍",
+            "category": "DB",
+            "details": f"archivo={archivo_seleccionado.name}",
+            "color": "BLUE",
+        },
+    )
+    return archivo_seleccionado
+
+
 def main() -> None:
     """
     Punto de entrada principal del script.
@@ -63,15 +92,18 @@ def main() -> None:
         clean_old_logs(logger=logger)
         return
 
-    # Configuración por defecto para el proceso principal:
-    # - El Excel "planilas.xlsx" debe estar junto a este script.
-    # - Los archivos descargados se almacenarán en "planillas_organizadas".
-    config = DownloadConfig(
-        excel_path=Path("planilas.xlsx"),
-        output_dir=Path("planillas_organizadas"),
-    )
-
     try:
+        # Buscamos el Excel dinámicamente en lugar de usar uno fijo
+        excel_path = buscar_archivo_excel()
+
+        # Configuración dinámica:
+        # - El Excel se busca automáticamente en la raíz.
+        # - Los archivos descargados se almacenarán en "planillas_organizadas".
+        config = DownloadConfig(
+            excel_path=excel_path,
+            output_dir=Path("planillas_organizadas"),
+        )
+
         processor = PlanillaProcessor(config)
         processor.procesar()
     except ConfigError as exc:
