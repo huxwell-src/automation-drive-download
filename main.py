@@ -11,11 +11,12 @@ La lógica de negocio está separada en:
 
 import argparse
 import logging
+import os
 from pathlib import Path
 
-from config import ConfigError, DownloadConfig
-from log_utils import clean_old_logs, setup_logging
-from processor import PlanillaProcessor
+from src.models.config import ConfigError, DownloadConfig
+from src.utils.log_utils import clean_old_logs, setup_logging
+from src.core.processor import PlanillaProcessor
 
 
 # Logger de módulo para registrar información y errores de la aplicación.

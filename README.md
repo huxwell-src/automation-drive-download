@@ -53,11 +53,14 @@ python main.py --clean-logs
 
 ## 📂 Estructura del Proyecto
 
+El proyecto está organizado en carpetas para una mejor mantenibilidad y separación de responsabilidades:
+
 - `main.py`: Punto de entrada y configuración inicial.
-- `processor.py`: Lógica principal de procesamiento del Excel.
-- `drive_downloader.py`: Manejo de descargas y conversión de archivos.
-- `log_utils.py`: Sistema de logging visual y utilidades.
-- `config.py`: Definiciones de configuración y excepciones personalizadas.
+- `src/`:
+  - `core/`: Lógica principal del negocio (`processor.py`).
+  - `services/`: Servicios externos como Google Drive (`drive_downloader.py`).
+  - `models/`: Definiciones de datos y configuraciones (`config.py`).
+  - `utils/`: Utilidades transversales como el sistema de logging (`log_utils.py`).
 - `logs/`: Directorio donde se guardan los logs diarios en formato JSON.
 
 ## 📄 Licencia

@@ -8,13 +8,13 @@ from typing import Optional, Tuple
 
 import pandas as pd
 
-from config import ConfigError, DownloadConfig
-from drive_downloader import (
+from src.models.config import ConfigError, DownloadConfig
+from src.services.drive_downloader import (
     DownloadError,
     GoogleDriveDownloader,
     extraer_id_drive,
 )
-from log_utils import ProgressBar, timed_operation
+from src.utils.log_utils import ProgressBar, timed_operation
 
 
 logger = logging.getLogger(__name__)
