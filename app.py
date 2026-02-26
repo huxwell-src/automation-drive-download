@@ -25,9 +25,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Automate API",
     description="API para automatizar la descarga y organización de planillas desde Google Drive",
-    version="1.0.0",
-    docs_url="/api/docs",
-    openapi_url="/api/openapi.json"
+    version="1.0.0"
 )
 
 # Configurar CORS
@@ -40,16 +38,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Directorios de trabajo usando la carpeta temporal del sistema
-base_temp_path = os.getenv("BASE_TEMP_DIR")
-if base_temp_path:
-    BASE_TEMP = Path(base_temp_path)
-else:
-    BASE_TEMP = Path(tempfile.gettempdir()) / "automate_app"
-
-UPLOAD_DIR = BASE_TEMP / "uploads"
-OUTPUT_DIR = BASE_TEMP / "planillas_organizadas"
-ZIP_DIR = BASE_TEMP / "exports"
+# Directorios temporales para la API
+UPLOAD_DIR = Path("uploads")
+OUTPUT_DIR = Path("planillas_organizadas")
+ZIP_DIR = Path("exports")
 
 # Asegurar que existan
 for d in [UPLOAD_DIR, OUTPUT_DIR, ZIP_DIR]:
