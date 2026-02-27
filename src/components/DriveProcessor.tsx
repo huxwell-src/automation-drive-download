@@ -56,7 +56,7 @@ const DriveProcessor = () => {
         formData.append('mes', mes);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/process/`, { method: 'POST', body: formData });
+            const response = await fetch(`${API_BASE_URL}/api/process/`, { method: 'POST', body: formData });
             if (!response.ok) throw new Error('Error al iniciar el procesamiento');
             const data = await response.json();
             pollStatus(data.task_id);
@@ -69,7 +69,7 @@ const DriveProcessor = () => {
     const pollStatus = (taskId: string) => {
         const interval = setInterval(async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/status/${taskId}`);
+                const res = await fetch(`${API_BASE_URL}/api/status/${taskId}`);
                 if (!res.ok) throw new Error('Error al consultar el estado');
                 const data = await res.json();
                 
@@ -78,7 +78,10 @@ const DriveProcessor = () => {
 
                 if (data.status === 'completed') {
                     clearInterval(interval);
-                    setResult(data);
+                    setResult({
+                        ...data,
+                        zip_url: `${API_BASE_URL}/api/download/${taskId}`
+                    });
                     setStatus('success');
                 } else if (data.status === 'failed') {
                     clearInterval(interval);

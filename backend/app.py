@@ -1,3 +1,7 @@
+import os
+import shutil
+import logging
+import time
 import tempfile
 from pathlib import Path
 from typing import List, Optional
@@ -6,9 +10,9 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from src.models.config import ConfigError, DownloadConfig
-from src.core.processor import PlanillaProcessor
-from src.utils.log_utils import setup_logging
+from logic.models.config import ConfigError, DownloadConfig
+from logic.core.processor import PlanillaProcessor
+from logic.utils.log_utils import setup_logging
 
 # Configuración inicial
 setup_logging(level_name="INFO")
@@ -29,8 +33,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Detectar si estamos en Vercel
-IS_VERCEL = os.getenv("VERCEL") == "1"
+# Detectar si estamos en Vercel de forma robusta
+IS_VERCEL = os.environ.get("VERCEL") == "1" or os.environ.get("VERCEL_ENV") is not None or os.environ.get("AWS_LAMBDA_FUNCTION_NAME") is not None
 
 if IS_VERCEL:
     # En Vercel usamos /tmp

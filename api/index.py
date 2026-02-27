@@ -1,11 +1,22 @@
 import sys
 import os
+from pathlib import Path
 
-# Añadir el directorio raíz y el directorio de backend al path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'backend'))
+# Determinar la raíz del proyecto de forma absoluta
+BASE_DIR = Path(__file__).parent.parent.absolute()
+BACKEND_DIR = BASE_DIR / "backend"
 
-from backend.app import app
+# Añadir 'backend' al principio del path para que las importaciones de app.py funcionen
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
-# Vercel Serverless Function entrypoint
-handler = app
+# Importar la instancia de FastAPI
+try:
+    from app import app
+except ImportError as e:
+    # Intento alternativo
+    sys.path.append(str(BASE_DIR))
+    from backend.app import app
+
+# Vercel espera una variable llamada 'app'
+app = app

@@ -110,11 +110,14 @@ def setup_logging(level_name: Optional[str] = None) -> None:
     """
     Configura el sistema de logging global.
     """
-    # Detectar si estamos en Vercel para evitar escritura en disco
-    is_vercel = os.getenv("VERCEL") == "1"
+    # Detectar si estamos en Vercel de forma robusta
+    is_vercel = os.environ.get("VERCEL") == "1" or os.environ.get("VERCEL_ENV") is not None or os.environ.get("AWS_LAMBDA_FUNCTION_NAME") is not None
 
     if not is_vercel:
-        LOG_DIR.mkdir(parents=True, exist_ok=True)
+        try:
+            LOG_DIR.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass
 
     selected_level = (level_name or "INFO").upper()
     level = getattr(logging, selected_level, logging.INFO)
