@@ -1,7 +1,3 @@
-import os
-import shutil
-import logging
-import time
 import tempfile
 from pathlib import Path
 from typing import List, Optional
@@ -9,14 +5,10 @@ from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException, F
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from dotenv import load_dotenv
 
 from src.models.config import ConfigError, DownloadConfig
 from src.core.processor import PlanillaProcessor
 from src.utils.log_utils import setup_logging
-
-# Cargar variables de entorno
-load_dotenv()
 
 # Configuración inicial
 setup_logging(level_name="INFO")
@@ -29,19 +21,28 @@ app = FastAPI(
 )
 
 # Configurar CORS
-origins = os.getenv("CORS_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Directorios temporales para la API
-UPLOAD_DIR = Path("uploads")
-OUTPUT_DIR = Path("planillas_organizadas")
-ZIP_DIR = Path("exports")
+# Detectar si estamos en Vercel
+IS_VERCEL = os.getenv("VERCEL") == "1"
+
+if IS_VERCEL:
+    # En Vercel usamos /tmp
+    BASE_TEMP = Path(tempfile.gettempdir()) / "automate_app"
+    UPLOAD_DIR = BASE_TEMP / "uploads"
+    OUTPUT_DIR = BASE_TEMP / "planillas_organizadas"
+    ZIP_DIR = BASE_TEMP / "exports"
+else:
+    # Localmente usamos carpetas del proyecto
+    UPLOAD_DIR = Path("uploads")
+    OUTPUT_DIR = Path("planillas_organizadas")
+    ZIP_DIR = Path("exports")
 
 # Asegurar que existan
 for d in [UPLOAD_DIR, OUTPUT_DIR, ZIP_DIR]:

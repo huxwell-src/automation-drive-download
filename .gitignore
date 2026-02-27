@@ -160,3 +160,4 @@ frontend/
 *.tmp
 planilas.xlsx
 .vercel
+.env*.local

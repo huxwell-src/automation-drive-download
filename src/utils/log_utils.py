@@ -109,16 +109,14 @@ class JsonFormatter(logging.Formatter):
 def setup_logging(level_name: Optional[str] = None) -> None:
     """
     Configura el sistema de logging global.
-
-    - Nivel configurable por parámetro o variable de entorno APP_LOG_LEVEL.
-    - Salida de consola con colores y emojis.
-    - Archivo JSON rotado diariamente en la carpeta "logs".
     """
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    # Detectar si estamos en Vercel para evitar escritura en disco
+    is_vercel = False
 
-    env_level = os.getenv("APP_LOG_LEVEL", "").upper()
-    selected_level = (level_name or env_level or "INFO").upper()
+    if not is_vercel:
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
 
+    selected_level = (level_name or "INFO").upper()
     level = getattr(logging, selected_level, logging.INFO)
 
     root_logger = logging.getLogger()
@@ -128,23 +126,28 @@ def setup_logging(level_name: Optional[str] = None) -> None:
     for handler in list(root_logger.handlers):
         root_logger.removeHandler(handler)
 
-    # Consola con colores.
+    # Consola con colores (Siempre habilitada).
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(level)
     console_handler.setFormatter(ColoredFormatter())
     root_logger.addHandler(console_handler)
 
-    # Archivo JSON rotado diariamente.
-    file_handler = TimedRotatingFileHandler(
-        LOG_DIR / "app.log.jsonl",
-        when="midnight",
-        interval=1,
-        backupCount=7,
-        encoding="utf-8",
-    )
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(JsonFormatter())
-    root_logger.addHandler(file_handler)
+    # Archivo JSON rotado diariamente (Solo si NO estamos en Vercel).
+    if not is_vercel:
+        try:
+            file_handler = TimedRotatingFileHandler(
+                LOG_DIR / "app.log.jsonl",
+                when="midnight",
+                interval=1,
+                backupCount=7,
+                encoding="utf-8",
+            )
+            file_handler.setLevel(logging.DEBUG)
+            file_handler.setFormatter(JsonFormatter())
+            root_logger.addHandler(file_handler)
+        except Exception:
+            # Si falla la creación del archivo de log local, continuamos con consola
+            pass
 
 
 @contextmanager
