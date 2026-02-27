@@ -1,0 +1,40 @@
+---
+import '../styles/global.css';
+import DriveProcessor from '../components/DriveProcessor';
+---
+
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Drive Batch Processor</title>
+		<link rel="preconnect" href="https://rsms.me/">
+		<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+		<style>
+			:root { font-family: 'Inter', sans-serif; }
+			@supports (font-variation-settings: normal) {
+				:root { font-family: 'Inter var', sans-serif; }
+			}
+		</style>
+	</head>
+	<body class="bg-[#FBFBFD] text-[#1D1D1F] min-h-screen antialiased">
+		<div class="max-w-[600px] mx-auto px-6 py-20">
+			<!-- Header -->
+			<header class="text-center mb-16">
+				<h1 class="text-[40px] font-semibold tracking-tight mb-3">Drive Batch Processor</h1>
+				<p class="text-[#86868B] text-xl font-medium">Convierte y organiza documentos desde Excel</p>
+			</header>
+
+			<!-- Tarjeta Principal con Componente React -->
+			<main class="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#F2F2F7] p-10 relative">
+				<DriveProcessor client:load />
+			</main>
+
+			<footer class="mt-20 text-center">
+				<p class="text-[#86868B] font-medium tracking-tight">Drive Batch Processor v1.0</p>
+			</footer>
+		</div>
+	</body>
+</html>

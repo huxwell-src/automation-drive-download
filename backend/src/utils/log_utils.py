@@ -111,7 +111,7 @@ def setup_logging(level_name: Optional[str] = None) -> None:
     Configura el sistema de logging global.
     """
     # Detectar si estamos en Vercel para evitar escritura en disco
-    is_vercel = False
+    is_vercel = os.getenv("VERCEL") == "1"
 
     if not is_vercel:
         LOG_DIR.mkdir(parents=True, exist_ok=True)
