@@ -1,8 +1,7 @@
 import os
+import time
 import shutil
 import logging
-import time
-import tempfile
 from pathlib import Path
 from typing import List, Optional
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException, Form
@@ -10,9 +9,9 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from logic.models.config import ConfigError, DownloadConfig
-from logic.core.processor import PlanillaProcessor
-from logic.utils.log_utils import setup_logging
+from models.config import ConfigError, DownloadConfig
+from core.processor import PlanillaProcessor
+from utils.log_utils import setup_logging
 
 # Configuración inicial
 setup_logging(level_name="INFO")
@@ -33,20 +32,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Detectar si estamos en Vercel de forma robusta
-IS_VERCEL = os.environ.get("VERCEL") == "1" or os.environ.get("VERCEL_ENV") is not None or os.environ.get("AWS_LAMBDA_FUNCTION_NAME") is not None
-
-if IS_VERCEL:
-    # En Vercel usamos /tmp
-    BASE_TEMP = Path(tempfile.gettempdir()) / "automate_app"
-    UPLOAD_DIR = BASE_TEMP / "uploads"
-    OUTPUT_DIR = BASE_TEMP / "planillas_organizadas"
-    ZIP_DIR = BASE_TEMP / "exports"
-else:
-    # Localmente usamos carpetas del proyecto
-    UPLOAD_DIR = Path("uploads")
-    OUTPUT_DIR = Path("planillas_organizadas")
-    ZIP_DIR = Path("exports")
+# Localmente usamos carpetas del proyecto
+UPLOAD_DIR = Path("uploads")
+OUTPUT_DIR = Path("planillas_organizadas")
+ZIP_DIR = Path("exports")
 
 # Asegurar que existan
 for d in [UPLOAD_DIR, OUTPUT_DIR, ZIP_DIR]:
