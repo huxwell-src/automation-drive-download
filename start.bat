@@ -1,6 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
 
+:: Omitir restricciones de ejecución para esta sesión
+powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force"
+
 :: 0. Iniciar Splash Screen (Loading Window) en paralelo
 start /min powershell -WindowStyle Hidden -ExecutionPolicy Bypass -File "loading.ps1"
 
@@ -30,9 +33,15 @@ if exist "backend\requirements.txt" (
 
 :: 3. Frontend: Instalación de dependencias de Node.js
 if exist "frontend\package.json" (
-    if not exist "frontend\node_modules" (
-        cd frontend && npm install --quiet && cd ..
+    cd frontend
+    if not exist "node_modules" (
+        echo [!] Instalando dependencias de Node...
+        npm install --quiet
+    ) else (
+        echo [!] Actualizando dependencias de Node...
+        npm install --quiet
     )
+    cd ..
 )
 
 :: 4. Iniciar Servidores en Segundo Plano (Minimizados)

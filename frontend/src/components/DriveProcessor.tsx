@@ -8,6 +8,7 @@ const DriveProcessor = () => {
     const [file, setFile] = useState<File | null>(null);
     const [rowCount, setRowCount] = useState(0);
     const [mes, setMes] = useState('diciembre');
+    const [usarMes, setUsarMes] = useState(true);
     const [status, setStatus] = useState<'upload' | 'processing' | 'success' | 'failed'>('upload');
     const [showAlert, setShowAlert] = useState(false);
     const [progress, setProgress] = useState({ current: 0, total: 0, lastItem: '', percent: 0 });
@@ -54,6 +55,7 @@ const DriveProcessor = () => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('mes', mes);
+        formData.append('usar_mes', usarMes.toString());
 
         try {
             const response = await fetch(`${API_BASE_URL}/process/`, { method: 'POST', body: formData });
@@ -199,17 +201,38 @@ const DriveProcessor = () => {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-3">
-                                        <label className="block text-sm font-semibold text-[#86868B] uppercase tracking-wider">Mes de las Planillas</label>
-                                        <select 
-                                            value={mes} 
-                                            onChange={(e) => setMes(e.target.value)}
-                                            className="w-full bg-[#F5F5F7] border-none rounded-xl px-5 py-4 font-medium focus:ring-2 focus:ring-[#0071E3] transition-all outline-none appearance-none"
-                                        >
-                                            {['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'].map(m => (
-                                                <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>
-                                            ))}
-                                        </select>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-sm font-semibold text-[#86868B] uppercase tracking-wider">Incluir mes en nombre</label>
+                                            <button 
+                                                onClick={() => setUsarMes(!usarMes)}
+                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${usarMes ? 'bg-[#34C759]' : 'bg-[#D2D2D7]'}`}
+                                            >
+                                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${usarMes ? 'translate-x-6' : 'translate-x-1'}`} />
+                                            </button>
+                                        </div>
+
+                                        <AnimatePresence>
+                                            {usarMes && (
+                                                <motion.div 
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    className="space-y-3 overflow-hidden"
+                                                >
+                                                    <label className="block text-sm font-semibold text-[#86868B] uppercase tracking-wider">Mes de las Planillas</label>
+                                                    <select 
+                                                        value={mes} 
+                                                        onChange={(e) => setMes(e.target.value)}
+                                                        className="w-full bg-[#F5F5F7] border-none rounded-xl px-5 py-4 font-medium focus:ring-2 focus:ring-[#0071E3] transition-all outline-none appearance-none"
+                                                    >
+                                                        {['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'].map(m => (
+                                                            <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>
+                                                        ))}
+                                                    </select>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
 
                                     <button 

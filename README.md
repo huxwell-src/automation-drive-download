@@ -1,88 +1,56 @@
-# Automate - Descarga de Planillas
+# Automate - Drive Batch Processor 🚀
 
-Script automatizado para descargar planillas de asistencia desde Google Drive basándose en un archivo Excel, organizarlas por categorías y convertirlas automáticamente a formato PDF.
+Automate es una herramienta diseñada para descargar, organizar y convertir planillas de asistencia desde Google Drive de forma masiva, utilizando un archivo Excel como fuente de datos.
 
-## 🚀 Características
+---
 
-- **Organización Automática**: Clasifica las planillas en carpetas separadas (ej. OSDE y No OSDE).
-- **Conversión a PDF**: Convierte imágenes (JPG, PNG) a PDF automáticamente al descargar.
-- **Logging Visual**: Feedback en tiempo real con colores, emojis y barras de progreso.
-- **Robustez**: Manejo de errores detallado y reintentos para archivos grandes de Drive.
-- **Modularidad**: Código siguiendo principios SOLID y separado en módulos mantenibles.
+## 🏁 Guía de Inicio Rápido (Getting Started)
 
-## 📋 Requisitos Previos
+Si acabas de descargar el código, sigue estos pasos para ponerlo en marcha sin complicaciones:
 
-- Python 3.8+
-- Un archivo Excel llamado `planilas.xlsx` en la raíz del proyecto con las siguientes columnas:
-  - `NOMBRE Y APELLIDO`: Nombre de la persona.
-  - `osde - no osde`: Categoría para organizar (contiene "OSDE" o no).
-  - `planilla`: Enlace de Google Drive.
+### 1. Requisitos Previos
+Asegúrate de tener instalado en tu PC:
+- **Python 3.10+**
+- **Node.js (LTS)**
 
-## 🛠️ Instalación
+### 2. Preparación del Excel
+Asegúrate de tener un archivo llamado `planilas.xlsx` en la carpeta raíz con las siguientes columnas exactas:
+- `NOMBRE Y APELLIDO`: El nombre de la persona.
+- `osde - no osde`: La categoría (si contiene "OSDE" se guardará en esa carpeta).
+- `planilla`: El enlace directo de Google Drive.
+> **Importante:** Los archivos en Drive deben tener el acceso configurado como "Cualquier persona con el enlace".
 
-1. Clona el repositorio o descarga los archivos.
-2. Crea un entorno virtual (recomendado):
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # En Linux/Mac
-   .\.venv\Scripts\activate   # En Windows
-   ```
-3. Instala las dependencias necesarias:
-   ```bash
-   pip install pandas requests Pillow openpyxl
-   ```
+### 3. Ejecución (El modo fácil)
+No necesitas abrir terminales. Simplemente busca el archivo:
+👉 **`Instalar_y_Lanzar.vbs`**
 
-## 💻 Uso
+Al ejecutarlo por primera vez:
+1. Creará un **acceso directo en tu Escritorio** llamado "Automate".
+2. Verás una ventana de carga minimalista mientras se instalan las dependencias (Python y Node).
+3. Una vez listo, se abrirá automáticamente la aplicación en tu navegador ([http://localhost:4321](http://localhost:4321)).
 
-Para iniciar el proceso de descarga:
-```bash
-python main.py
-```
+---
 
-### Opciones de Logging
-Puedes configurar el nivel de detalle de los logs:
-```bash
-python main.py --log-level DEBUG
-```
+## 🛠️ Características Principales
 
-### Limpieza de Logs
-Para eliminar archivos de log antiguos (mayores a 7 días):
-```bash
-python main.py --clean-logs
-```
+- **Organización Automática:** Clasifica archivos en carpetas (OSDE / NO OSDE) según el Excel.
+- **Conversión a PDF:** Si descargas imágenes (JPG/PNG), se convierten a PDF automáticamente.
+- **Mes Opcional:** Puedes elegir si el nombre del archivo descargado debe incluir el mes o no mediante un interruptor en la web.
+- **Interfaz Moderna:** UI limpia basada en los principios de diseño de Apple.
+- **Ejecución Silenciosa:** Los servidores corren en segundo plano sin ventanas de terminal molestas.
 
-## 🌐 API con FastAPI
-
-Ahora puedes usar Automate como un servicio web.
-
-### Instalación de dependencias para la API:
-```bash
-pip install -r requirements.txt
-```
-
-### Ejecutar el servidor:
-```bash
-uvicorn app:app --reload
-```
-La API estará disponible en `http://localhost:8000`. Puedes acceder a la documentación interactiva en `http://localhost:8000/docs`.
-
-### Endpoints principales:
-- `POST /process/`: Sube un Excel e inicia la descarga en segundo plano.
-- `GET /status/{task_id}`: Consulta el progreso de una tarea específica.
-- `GET /tasks/`: Lista todas las tareas y su estado.
+---
 
 ## 📂 Estructura del Proyecto
 
-El proyecto está organizado en carpetas para una mejor mantenibilidad y separación de responsabilidades:
+- `backend/`: API construida con FastAPI y lógica de procesamiento.
+- `frontend/`: Interfaz web construida con Astro y React.
+- `planilas.xlsx`: Archivo Excel de ejemplo/datos.
+- `start.bat`: Script maestro de configuración y arranque.
+- `Instalar_y_Lanzar.vbs`: Lanzador visual para el usuario final.
 
-- `main.py`: Punto de entrada y configuración inicial.
-- `src/`:
-  - `core/`: Lógica principal del negocio (`processor.py`).
-  - `services/`: Servicios externos como Google Drive (`drive_downloader.py`).
-  - `models/`: Definiciones de datos y configuraciones (`config.py`).
-  - `utils/`: Utilidades transversales como el sistema de logging (`log_utils.py`).
-- `logs/`: Directorio donde se guardan los logs diarios en formato JSON.
+---
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
+Este proyecto está bajo la Licencia MIT.

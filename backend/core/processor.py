@@ -172,7 +172,13 @@ class PlanillaProcessor:
                     status = "error"
                     fallos += 1
                 else:
-                    destino_base = carpeta_destino / f"planilla de asistencia {self._config.mes} {nombre}"
+                    # Construir nombre de archivo opcionalmente con el mes
+                    if self._config.usar_mes:
+                        nombre_archivo = f"Planilla - {self._config.mes} - {nombre}"
+                    else:
+                        nombre_archivo = f"Planilla - {nombre}"
+                    
+                    destino_base = carpeta_destino / nombre_archivo
 
                     try:
                         archivo_final = self._downloader.descargar(file_id, destino_base)

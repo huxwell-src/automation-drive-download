@@ -73,7 +73,7 @@ def cleanup_old_files():
                 except Exception as e:
                     logger.error(f"Error al eliminar {path.name}: {e}")
 
-def run_processor_task(task_id: str, excel_path: Path, mes: str):
+def run_processor_task(task_id: str, excel_path: Path, mes: str, usar_mes: bool = True):
     """Tarea en segundo plano para procesar el Excel y generar el ZIP."""
     cleanup_old_files()  # Limpiar archivos viejos antes de empezar una nueva tarea
     tasks_status[task_id].status = "running"
@@ -99,7 +99,8 @@ def run_processor_task(task_id: str, excel_path: Path, mes: str):
         config = DownloadConfig(
             excel_path=excel_path,
             output_dir=task_output_dir,
-            mes=mes
+            mes=mes,
+            usar_mes=usar_mes
         )
         processor = PlanillaProcessor(config, progress_callback=progress_callback)
         result = processor.procesar()
@@ -137,7 +138,8 @@ async def root():
 async def create_upload_file(
     background_tasks: BackgroundTasks, 
     file: UploadFile = File(...),
-    mes: str = Form("diciembre")
+    mes: str = Form("diciembre"),
+    usar_mes: bool = Form(True)
 ):
     """Sube un archivo Excel e inicia el procesamiento en segundo plano."""
     if not file.filename.endswith(('.xlsx', '.xls')):
@@ -150,7 +152,7 @@ async def create_upload_file(
         shutil.copyfileobj(file.file, buffer)
     
     tasks_status[task_id] = TaskProgress(task_id=task_id, status="pending")
-    background_tasks.add_task(run_processor_task, task_id, file_path, mes)
+    background_tasks.add_task(run_processor_task, task_id, file_path, mes, usar_mes)
     
     return tasks_status[task_id]
 
