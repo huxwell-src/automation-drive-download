@@ -23,6 +23,8 @@ if %errorlevel% neq 0 (
 )
 
 :: 2. Backend: Entorno Virtual e Instalación de dependencias de Python
+if not exist "logs" mkdir logs
+
 if not exist "backend\.venv" (
     python -m venv backend\.venv
 )
@@ -36,24 +38,26 @@ if exist "frontend\package.json" (
     cd frontend
     if not exist "node_modules" (
         echo [!] Instalando dependencias de Node...
-        npm install --quiet
+        npm install --quiet > ..\logs\npm_install.log 2>&1
     ) else (
         echo [!] Actualizando dependencias de Node...
-        npm install --quiet
+        npm install --quiet > ..\logs\npm_install.log 2>&1
     )
     cd ..
 )
 
 :: 4. Iniciar Servidores en Segundo Plano (Minimizados)
-start /min "Automate Backend" cmd /c "cd backend && .venv\Scripts\python.exe app.py"
+echo [+] Iniciando Backend...
+start /min "Automate Backend" cmd /c "cd backend && .venv\Scripts\python.exe app.py > ..\logs\backend.log 2>&1"
 timeout /t 3 /nobreak > nul
 
-start /min "Automate Frontend" cmd /c "cd frontend && npm run dev"
+echo [+] Iniciando Frontend...
+start /min "Automate Frontend" cmd /c "cd frontend && npm run dev > ..\logs\frontend.log 2>&1"
 
 :: 5. Esperar y abrir la web
 timeout /t 5 /nobreak > nul
 
-:: 6. Cerrar Splash Screen
+:: 6. Logs y Finalización de Splash Screen
 powershell -Command "Get-Process | Where-Object { $_.MainWindowTitle -eq 'Cargando Automate...' } | Stop-Process -Force" >nul 2>&1
 
 :: Abrir la web automáticamente

@@ -51,6 +51,17 @@ Al ejecutarlo por primera vez:
 
 ---
 
+## 🚀 Versión 2 (Solo Next.js)
+
+Existe una versión experimental en la carpeta `v2/` construida íntegramente con Next.js (sin necesidad de un backend en Python por separado). 
+
+Para probarla:
+1. `cd v2`
+2. `npm install`
+3. `npm run dev`
+
+---
+
 ## 📄 Licencia
 
 Este proyecto está bajo la Licencia MIT.

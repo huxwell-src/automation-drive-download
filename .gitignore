@@ -1,4 +1,7 @@
-# Byte-compiled / optimized / DLL files
+# Custom folders
+v2/
+frontend/node_modules/
+backend/.venv/
 __pycache__/
 *.py[cod]
 *$py.class
