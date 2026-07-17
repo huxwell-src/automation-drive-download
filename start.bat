@@ -14,7 +14,6 @@ if %errorlevel% neq 0 (
     powershell -Command "[Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms'); [System.Windows.Forms.MessageBox]::Show('Python no esta instalado en este sistema. Por favor, instalalo para continuar.', 'Error de Requisitos', 'OK', 'Error')"
     exit /b 1
 )
-
 where npm >nul 2>nul
 if %errorlevel% neq 0 (
     taskkill /f /fi "windowtitle eq Cargando Automate..." >nul 2>&1
@@ -22,42 +21,21 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-:: 2. Backend: Entorno Virtual e Instalación de dependencias de Python
 if not exist "logs" mkdir logs
 
-if not exist "backend\.venv" (
-    python -m venv backend\.venv
-)
-
-if exist "backend\requirements.txt" (
-    backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt --quiet
-)
-
-:: 3. Frontend: Instalación de dependencias de Node.js
-if exist "frontend\package.json" (
-    cd frontend
-    if not exist "node_modules" (
-        echo [!] Instalando dependencias de Node...
-        npm install --quiet > ..\logs\npm_install.log 2>&1
-    ) else (
-        echo [!] Actualizando dependencias de Node...
-        npm install --quiet > ..\logs\npm_install.log 2>&1
-    )
-    cd ..
-)
-
-:: 4. Iniciar Servidores en Segundo Plano (Minimizados)
+:: 2. Iniciar Backend (FastAPI con uvicorn)
 echo [+] Iniciando Backend...
-start /min "Automate Backend" cmd /c "cd backend && .venv\Scripts\python.exe app.py > ..\logs\backend.log 2>&1"
+start /min "Automate Backend" cmd /c "cd backend && .venv\Scripts\python.exe -m uvicorn app:app --reload --port 8000 > ..\logs\backend.log 2>&1"
 timeout /t 3 /nobreak > nul
 
+:: 3. Iniciar Frontend
 echo [+] Iniciando Frontend...
 start /min "Automate Frontend" cmd /c "cd frontend && npm run dev > ..\logs\frontend.log 2>&1"
 
-:: 5. Esperar y abrir la web
+:: 4. Esperar y abrir la web
 timeout /t 5 /nobreak > nul
 
-:: 6. Logs y Finalización de Splash Screen
+:: 5. Cerrar Splash Screen
 powershell -Command "Get-Process | Where-Object { $_.MainWindowTitle -eq 'Cargando Automate...' } | Stop-Process -Force" >nul 2>&1
 
 :: Abrir la web automáticamente
