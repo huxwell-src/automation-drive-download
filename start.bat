@@ -23,14 +23,14 @@ if %errorlevel% neq 0 (
 
 if not exist "logs" mkdir logs
 
-:: 2. Iniciar Backend (FastAPI con uvicorn)
+:: 2. Iniciar Backend (FastAPI con uvicorn) - ventana visible con /k para ver errores
 echo [+] Iniciando Backend...
-start /min "Automate Backend" cmd /c "cd backend && .venv\Scripts\python.exe -m uvicorn app:app --reload --port 8000 > ..\logs\backend.log 2>&1"
+start "Automate Backend" cmd /k "cd backend && .venv\Scripts\python.exe -m uvicorn app:app --reload --port 8000"
 timeout /t 3 /nobreak > nul
 
-:: 3. Iniciar Frontend
+:: 3. Iniciar Frontend - ventana visible con /k para ver errores
 echo [+] Iniciando Frontend...
-start /min "Automate Frontend" cmd /c "cd frontend && npm run dev > ..\logs\frontend.log 2>&1"
+start "Automate Frontend" cmd /k "cd frontend && npm run dev"
 
 :: 4. Esperar y abrir la web
 timeout /t 5 /nobreak > nul
